@@ -2,17 +2,20 @@
 # Gabriel Teuchert
 
 import numpy as np
+import re
 
 
 class mapReader:
 
     calibrationData = []
+    calibration = 0
     digimons = []
 
     def __init__(self, path=None):
         self.dataPath = path
         self.readCalibrationData()
-        self.calibration = int(sum(self.digimonCatcher()))
+        self.calibrationDigits = self.digimonCatcher()
+        self.calculateResult()
 
     def readCalibrationData(self):
         data = []
@@ -23,35 +26,41 @@ class mapReader:
         return self.calibrationData
 
     def digimonCatcher(self):
-        digits = np.zeros(len(self.calibrationData))
+        digits = []
         firstDigit = []
         secondDigit = []
         digitBuffer = []
         for index, line in enumerate(self.calibrationData):
-            digimons = ''.join((digimon if digimon in '0123456789' else ' ') for digimon in line)
-            listOfNumbers = digimons.split()
-            for element in listOfNumbers:
-                if len(firstDigit) == 0:
-                    firstDigit.append(element)
-                else:
-                    digitBuffer.append(element)
+            element = list(line)
+            for character in element:
+                if character.isdigit() is True:
+                    if len(firstDigit) == 0:
+                        firstDigit.append(character)
+                    else:
+                        digitBuffer.append(character)
             if len(digitBuffer) == 0:
                 digit = firstDigit + firstDigit
-                digits[index] = float(''.join(digit))
+                digits.append(''.join(digit))
                 firstDigit = []
                 secondDigit = []
                 digitBuffer = []
             elif len(digitBuffer) != 0:
                 secondDigit.append(digitBuffer.pop(-1))
                 digit = firstDigit + secondDigit
-                digits[index] = float(''.join(digit))
+                digits.append(''.join(digit))
                 firstDigit = []
                 secondDigit = []
                 digitBuffer = []
             else:
                 digits[index] = float(0)
-
         return digits
+
+    def calculateResult(self):
+        result = 0
+        for digit in self.calibrationDigits:
+            result += int(digit)
+        self.calibration = result
+        return result
 
 
 if __name__ == '__main__':

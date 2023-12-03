@@ -20,6 +20,10 @@ class test_classDayOne(unittest.TestCase):
         digimons = mR(path="exampleInput.txt")
         self.assertEquals(digimons.digimonCatcher().tolist(), test_digits, 'The Digimons are escalating')
 
+    def test_result(self):
+        calibration = mR(path="exampleInput.txt")
+        self.assertEquals(calibration.calculateResult(), test_result, 'Result is incorrect')
+
 
 if __name__ == "__main__":
     unittest.main()
