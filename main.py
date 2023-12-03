@@ -2,20 +2,22 @@
 # Gabriel Teuchert
 
 import numpy as np
-import re
 
 
 class mapReader:
 
     calibrationData = []
-    calibration = 0
+    calibrationResult = 0
     digimons = []
+    pokemons = []
+    digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+    spelled_numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 
     def __init__(self, path=None):
         self.dataPath = path
         self.readCalibrationData()
-        self.calibrationDigits = self.digimonCatcher()
-        self.calculateResult()
+        self.digimonCatcher()
+        self.calibrationResult = self.calculateResult()
 
     def readCalibrationData(self):
         data = []
@@ -27,10 +29,10 @@ class mapReader:
 
     def digimonCatcher(self):
         digits = []
-        firstDigit = []
-        secondDigit = []
-        digitBuffer = []
         for index, line in enumerate(self.calibrationData):
+            firstDigit = []
+            secondDigit = []
+            digitBuffer = []
             element = list(line)
             for character in element:
                 if character.isdigit() is True:
@@ -41,28 +43,44 @@ class mapReader:
             if len(digitBuffer) == 0:
                 digit = firstDigit + firstDigit
                 digits.append(''.join(digit))
-                firstDigit = []
-                secondDigit = []
-                digitBuffer = []
             elif len(digitBuffer) != 0:
                 secondDigit.append(digitBuffer.pop(-1))
                 digit = firstDigit + secondDigit
                 digits.append(''.join(digit))
-                firstDigit = []
-                secondDigit = []
-                digitBuffer = []
             else:
                 digits[index] = float(0)
+            self.digimons = list(map(int, digits))
         return digits
 
     def calculateResult(self):
         result = 0
-        for digit in self.calibrationDigits:
-            result += int(digit)
-        self.calibration = result
+        if len(self.digimons) != 0:
+            for digit in self.digimons:
+                result += int(digit)
+        else:
+            for digit in self.pokemons:
+                result += int(digit)
+        self.calibrationResult = result
         return result
+
+    def pokemonCatcher(self):
+        pokemon = np.zeros(2)
+        result = []
+        for dataIndex, string in enumerate(self.calibrationData):
+            # Check for digits
+            for digit in self.digits:
+                if digit in string:
+                    pokemon = dataIndex, int(digit)
+                    result.append(pokemon)
+            # Check for spelled numbers
+            for index, spelled_num in enumerate(self.spelled_numbers):
+                if spelled_num in string:
+                    pokemon = dataIndex, int(index)+1
+                    result.append(pokemon)
+        self.pokemons = result
+        return pokemon
 
 
 if __name__ == '__main__':
     mR = mapReader(path='src/calibrationData.txt')
-    print('Calibration Data = {0}'.format(mR.calibration))
+    print('Calibration Data = {0}'.format(mR.calibrationResult))
